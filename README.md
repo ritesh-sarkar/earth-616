@@ -451,6 +451,12 @@ NASA endorsement or affiliation beyond the dataset attribution.
 -   **Team name:** EARTH-616
 -   **Project:** Earth Information Jukebox
 -   **Challenge:** NASA Space Apps Challenge 2026
+-   **Team members:**
+-   **Ritesh Sarkar Showharda**
+-   **M Naem Sadik**
+-   **Md Abdullah Al Sifar**
+-   **Fahmid Yesmin Abedah**
+-   **Mrinmoy Pondit Spondon**
 
 Add the team members' names and roles here before publishing, if
 appropriate for the submission.
