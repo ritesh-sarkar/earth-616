@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # 🌍 EARTH-616 — Earth Information Jukebox
 
 ### See Earth. Hear Earth. Understand Earth.
