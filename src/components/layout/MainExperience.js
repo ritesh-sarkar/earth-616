@@ -793,6 +793,117 @@ export default function MainExperience() {
               <span>{earthView === 'thermal' ? 'NASA GISTEMP · 24-MONTH RUNNING MEAN' : 'CONTEXTUAL SATELLITE TEXTURE'}</span>
               <span><button type="button" onClick={() => setShowSources(true)}>visual notes</button></span>
             </div>
+            <section id="timeline-controls" className="transport transport-instrument" aria-label="Shared playback timeline and controls" tabIndex={-1}>
+              <div className="transport-top">
+                <div className="transport-date">
+                  <span className="transport-kicker">SHARED TIMELINE</span>
+                  <strong>{formatMonth(currentRecord)}</strong>
+                </div>
+                <div className="transport-controls">
+                  <button type="button" className="transport-skip" aria-label="Previous month" title="Previous month" onClick={() => changeDate(currentIndex - 1)} disabled={currentIndex === 0}><Glyph>−|</Glyph></button>
+                  <button
+                    type="button"
+                    className="transport-play"
+                    aria-label={isPlaying ? 'Pause playback' : 'Start playback'}
+                    onClick={isPlaying ? pausePlayback : () => startPlayback()}
+                    disabled={!isPlaying && !modeAvailability.available}
+                  >
+                    <Glyph>{isPlaying ? 'Ⅱ' : '▶'}</Glyph>
+                  </button>
+                  <button type="button" className="transport-skip" aria-label="Stop playback" title="Stop" onClick={stopPlayback}><Glyph>■</Glyph></button>
+                  <button type="button" className="transport-skip" aria-label="Next month" title="Next month" onClick={() => changeDate(currentIndex + 1)} disabled={currentIndex >= records.length - 1}><Glyph>|+</Glyph></button>
+                </div>
+                <div className="transport-options">
+                  <label htmlFor="playback-speed">PACE</label>
+                  <select id="playback-speed" value={playbackSpeed} onChange={(event) => setPlaybackSpeed(Number(event.target.value))}>
+                    {PLAYBACK_PACES.map(({ monthsPerSecond, label }) => (
+                      <option key={monthsPerSecond} value={monthsPerSecond}>{label}</option>
+                    ))}
+                  </select>
+                  <span className={`audio-status ${isPlaying ? 'is-playing' : ''}`} aria-live="polite">{playingStatus}</span>
+                </div>
+              </div>
+
+              <div className="timeline-control">
+                <div className="timeline-rail" style={{ '--co2-start': co2StartPercent, '--sea-level-start': seaLevelStartPercent }}>
+                  <span className="timeline-temperature-band" />
+                  <span className="timeline-co2-band" />
+                  <span className="timeline-sea-level-band" />
+                  <input
+                    type="range"
+                    min="0"
+                    max={records.length - 1}
+                    value={currentIndex}
+                    aria-label="Select a month in the shared historical timeline"
+                    aria-valuetext={formatMonth(currentRecord)}
+                    onChange={(event) => changeDate(Number(event.target.value))}
+                    style={{ '--timeline-progress': `${records.length > 1 ? (currentIndex / (records.length - 1)) * 100 : 0}%` }}
+                  />
+                </div>
+                <div className="timeline-labels"><span>{records[0].dateKey}</span><span>{latestDate}</span></div>
+              </div>
+
+              <div className="transport-bottom">
+                <div className="timeline-legend">
+                  <span><i className="temperature-line" /> Temperature</span>
+                  <span><i className="co2-line" /> CO₂ · from {firstCo2Record?.dateKey}</span>
+                  <span><i className="sea-level-line" /> Sea level · from {firstSeaLevelRecord?.dateKey}</span>
+                </div>
+                <div className="audio-mix">
+                  <div className="mix-toggle" role="group" aria-label="Sonification mode">
+                    <button
+                      type="button"
+                      className={sonificationMode === 'temperature' ? 'selected' : ''}
+                      aria-pressed={sonificationMode === 'temperature'}
+                      onClick={() => selectSonificationMode('temperature')}
+                    >
+                      Temperature
+                    </button>
+                    <button
+                      type="button"
+                      className={sonificationMode === 'co2' ? 'selected' : ''}
+                      aria-pressed={sonificationMode === 'co2'}
+                      onClick={() => selectSonificationMode('co2')}
+                    >
+                      CO₂
+                    </button>
+                    <button
+                      type="button"
+                      className={sonificationMode === 'sea-level' ? 'selected' : ''}
+                      aria-pressed={sonificationMode === 'sea-level'}
+                      onClick={() => selectSonificationMode('sea-level')}
+                    >
+                      Sea Level
+                    </button>
+                    <button
+                      type="button"
+                      className={sonificationMode === 'combined' ? 'selected' : ''}
+                      aria-pressed={sonificationMode === 'combined'}
+                      onClick={() => selectSonificationMode('combined')}
+                    >
+                      Temperature + CO₂
+                    </button>
+                  </div>
+                  <p className={`mode-availability ${modeAvailability.available ? '' : 'is-unavailable'}`} aria-live="polite">
+                    {modeAvailability.available
+                      ? sonificationMode === 'temperature'
+                        ? 'Anomaly → pitch'
+                        : sonificationMode === 'co2'
+                          ? 'CO₂ concentration → harmonic frequency + strength'
+                          : sonificationMode === 'sea-level'
+                            ? '60-day-smoothed GMSL → pitch'
+                            : 'Temperature → pitch · CO₂ → harmonic texture'
+                      : modeUnavailableReason}
+                  </p>
+                  <label className="volume-control">
+                    <span aria-hidden="true">VOL</span>
+                    <input aria-label="Audio volume" type="range" min="0" max="1" step="0.01" value={volume} onChange={(event) => setVolume(Number(event.target.value))} />
+                  </label>
+                  <Waveform engine={audioEngine} active={isPlaying} />
+                </div>
+              </div>
+              {audioError && <p className="inline-error" role="status">{audioError}</p>}
+            </section>
           </section>
 
           <aside id="selected-observation" className="measure-column" tabIndex={-1}>
@@ -949,117 +1060,6 @@ export default function MainExperience() {
           </aside>
         </div>
 
-        <section id="timeline-controls" className="transport" aria-label="Shared playback timeline and controls" tabIndex={-1}>
-          <div className="transport-top">
-            <div className="transport-date">
-              <span className="transport-kicker">SHARED TIMELINE</span>
-              <strong>{formatMonth(currentRecord)}</strong>
-            </div>
-            <div className="transport-controls">
-              <button type="button" className="transport-skip" aria-label="Previous month" title="Previous month" onClick={() => changeDate(currentIndex - 1)} disabled={currentIndex === 0}><Glyph>−|</Glyph></button>
-              <button
-                type="button"
-                className="transport-play"
-                aria-label={isPlaying ? 'Pause playback' : 'Start playback'}
-                onClick={isPlaying ? pausePlayback : () => startPlayback()}
-                disabled={!isPlaying && !modeAvailability.available}
-              >
-                <Glyph>{isPlaying ? 'Ⅱ' : '▶'}</Glyph>
-              </button>
-              <button type="button" className="transport-skip" aria-label="Stop playback" title="Stop" onClick={stopPlayback}><Glyph>■</Glyph></button>
-              <button type="button" className="transport-skip" aria-label="Next month" title="Next month" onClick={() => changeDate(currentIndex + 1)} disabled={currentIndex >= records.length - 1}><Glyph>|+</Glyph></button>
-            </div>
-            <div className="transport-options">
-              <label htmlFor="playback-speed">PACE</label>
-              <select id="playback-speed" value={playbackSpeed} onChange={(event) => setPlaybackSpeed(Number(event.target.value))}>
-                {PLAYBACK_PACES.map(({ monthsPerSecond, label }) => (
-                  <option key={monthsPerSecond} value={monthsPerSecond}>{label}</option>
-                ))}
-              </select>
-              <span className={`audio-status ${isPlaying ? 'is-playing' : ''}`} aria-live="polite">{playingStatus}</span>
-            </div>
-          </div>
-
-          <div className="timeline-control">
-            <div className="timeline-rail" style={{ '--co2-start': co2StartPercent, '--sea-level-start': seaLevelStartPercent }}>
-              <span className="timeline-temperature-band" />
-              <span className="timeline-co2-band" />
-              <span className="timeline-sea-level-band" />
-              <input
-                type="range"
-                min="0"
-                max={records.length - 1}
-                value={currentIndex}
-                aria-label="Select a month in the shared historical timeline"
-                aria-valuetext={formatMonth(currentRecord)}
-                onChange={(event) => changeDate(Number(event.target.value))}
-                style={{ '--timeline-progress': `${records.length > 1 ? (currentIndex / (records.length - 1)) * 100 : 0}%` }}
-              />
-            </div>
-            <div className="timeline-labels"><span>{records[0].dateKey}</span><span>{latestDate}</span></div>
-          </div>
-
-          <div className="transport-bottom">
-            <div className="timeline-legend">
-              <span><i className="temperature-line" /> Temperature</span>
-              <span><i className="co2-line" /> CO₂ · from {firstCo2Record?.dateKey}</span>
-              <span><i className="sea-level-line" /> Sea level · from {firstSeaLevelRecord?.dateKey}</span>
-            </div>
-            <div className="audio-mix">
-              <div className="mix-toggle" role="group" aria-label="Sonification mode">
-                <button
-                  type="button"
-                  className={sonificationMode === 'temperature' ? 'selected' : ''}
-                  aria-pressed={sonificationMode === 'temperature'}
-                  onClick={() => selectSonificationMode('temperature')}
-                >
-                  Temperature
-                </button>
-                <button
-                  type="button"
-                  className={sonificationMode === 'co2' ? 'selected' : ''}
-                  aria-pressed={sonificationMode === 'co2'}
-                  onClick={() => selectSonificationMode('co2')}
-                >
-                  CO₂
-                </button>
-                <button
-                  type="button"
-                  className={sonificationMode === 'sea-level' ? 'selected' : ''}
-                  aria-pressed={sonificationMode === 'sea-level'}
-                  onClick={() => selectSonificationMode('sea-level')}
-                >
-                  Sea Level
-                </button>
-                <button
-                  type="button"
-                  className={sonificationMode === 'combined' ? 'selected' : ''}
-                  aria-pressed={sonificationMode === 'combined'}
-                  onClick={() => selectSonificationMode('combined')}
-                >
-                  Temperature + CO₂
-                </button>
-              </div>
-              <p className={`mode-availability ${modeAvailability.available ? '' : 'is-unavailable'}`} aria-live="polite">
-                {modeAvailability.available
-                  ? sonificationMode === 'temperature'
-                    ? 'Anomaly → pitch'
-                    : sonificationMode === 'co2'
-                      ? 'CO₂ concentration → harmonic frequency + strength'
-                      : sonificationMode === 'sea-level'
-                        ? '60-day-smoothed GMSL → pitch'
-                        : 'Temperature → pitch · CO₂ → harmonic texture'
-                  : modeUnavailableReason}
-              </p>
-              <label className="volume-control">
-                <span aria-hidden="true">VOL</span>
-                <input aria-label="Audio volume" type="range" min="0" max="1" step="0.01" value={volume} onChange={(event) => setVolume(Number(event.target.value))} />
-              </label>
-              <Waveform engine={audioEngine} active={isPlaying} />
-            </div>
-          </div>
-          {audioError && <p className="inline-error" role="status">{audioError}</p>}
-        </section>
       </section>
 
       <section className="charts-section" aria-labelledby="history-heading">

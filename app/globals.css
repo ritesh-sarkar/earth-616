@@ -1170,6 +1170,43 @@ select:focus-visible {
   background: linear-gradient(90deg, rgba(14, 30, 42, 0.62), rgba(11, 24, 34, 0.15));
 }
 
+.transport-instrument {
+  margin-top: 18px;
+  border: 1px solid var(--line-strong);
+  padding: 14px;
+  background: linear-gradient(145deg, rgba(14, 30, 42, 0.82), rgba(7, 17, 27, 0.72));
+}
+
+.transport-instrument .transport-top {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px 12px;
+}
+
+.transport-instrument .transport-options {
+  grid-column: 1 / -1;
+  justify-content: flex-start;
+  border-top: 1px solid var(--line);
+  padding-top: 9px;
+}
+
+.transport-instrument .audio-status {
+  margin-left: auto;
+}
+
+.transport-instrument .transport-bottom {
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.transport-instrument .timeline-legend {
+  gap: 8px 14px;
+}
+
+.transport-instrument .audio-mix {
+  gap: 7px 10px;
+}
+
 .transport-top {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -2055,6 +2092,14 @@ select:focus-visible {
   .earth-stage {
     height: 400px;
     min-height: 360px;
+  }
+
+  .transport-instrument {
+    padding: 12px;
+  }
+
+  .transport-instrument .transport-controls {
+    gap: 5px;
   }
 
   .audio-mix {
